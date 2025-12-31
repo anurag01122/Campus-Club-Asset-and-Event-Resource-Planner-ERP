@@ -1,45 +1,36 @@
 const express = require("express");
-const mongoose = require("mongoose");
 const dotenv = require("dotenv");
-const cors = require("cors")
-// const connectDB = require("./DB/conn");
+const cors = require("cors");
 const cookieParser = require("cookie-parser");
+
 const app = express();
+
+dotenv.config({ path: "./.env" });
+
 app.use(cookieParser());
-
-app.use(cors({
-  credentials: true,
-  origin: true}));  
-  
-app.set("trust proxy",1); 
-
-
+app.use(cors({ credentials: true, origin: true }));
 app.use(express.json());
 
-dotenv.config({path:"./.env"})
+const connectDB = require("./DB/conn");
 
-// app.use((req, res, next) => {
-//   res.header('Access-Control-Allow-Credentials', true);
-//   next();
-// });
-const connectDB = require("./DB/conn")
-require("./model/userSchema")
-require("./model/hallSchema")
-require("./model/bookingSchema")
+// Models
+require("./model/userSchema");
+require("./model/hallSchema");
+require("./model/bookingSchema");
+require("./model/assetSchema");
 
+// Routes
 app.use(require("./router/authRoutes"));
 app.use(require("./router/bookingRoutes"));
 app.use(require("./router/hallRoutes"));
 
-// app.use('/api/halls', hallRoutes);
-// app.use('/api/bookings', bookingRoutes);
-connectDB()
+const assetRoutes = require("./router/assetRoutes");
+app.use("/api/assets", assetRoutes);
 
+// DB
+connectDB();
 
-const PORT = process.env.PORT
-
-
-
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  // console.log("Server is running on port",PORT);
+  console.log(`Server running on port ${PORT}`);
 });
