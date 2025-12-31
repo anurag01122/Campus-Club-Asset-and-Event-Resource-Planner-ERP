@@ -1,30 +1,28 @@
-const mongoose = require("mongoose");
+const { MongoClient, ServerApiVersion } = require("mongodb");
 
-const DB = process.env.DATABASE;
-mongoose.set('strictQuery', false)
-// try {
-//     mongoose.connect(DB, { useNewUrlParser: true, useUnfiedTopology: true }, () =>
-//       // console.log("conection successful ")
-//     );
-//   }
-//    catch (error) {
-//     // console.log(" no connection ");
-//   }
+let db; // shared db instance
 
 const connectDB = async () => {
-  try {
-    await mongoose.connect(DB, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      // usefindOneAndUpdate: false, // Use findOneAndUpdate() instead
-      // useCreateIndex: true // Use createIndex() instead
-    });
-    // console.log("MongoDB connected successfully");
-  } catch (error) {
-    // console.log(error)
-    console.error("MongoDB connection error:", error.message);
-    process.exit(1);
-  }
+  if (db) return db;
+
+  const client = new MongoClient(process.env.MONGO_URI, {
+    serverApi: {
+      version: ServerApiVersion.v1,
+      strict: true,
+      deprecationErrors: true,
+    },
+  });
+
+  await client.connect();
+  console.log("MongoDB connected (Native Driver)");
+
+  db = client.db("club_erp"); // database name
+  return db;
 };
 
-module.exports = connectDB;
+const getDB = () => {
+  if (!db) throw new Error("Database not initialized");
+  return db;
+};
+
+module.exports = { connectDB, getDB };
